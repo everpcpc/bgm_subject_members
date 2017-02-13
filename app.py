@@ -24,15 +24,18 @@ def get_subject_members(stp, sid):
     r = requests.get(url)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, 'lxml')
-    pages = int(soup.find(id='multipage').find('span', class_='p_edge').text.split('\xa0')[3])
+    page_span = soup.find(id='multipage').find('span', class_='p_edge')
+    if not page_span:
+        pages = 1
+    else:
+        pages = int(page_span.text.split('\xa0')[3])
     members = []
     for i in range(pages):
         sub_url = url + '?page=%d' % (i + 1)
         print('getting %s' % sub_url)
-        r = requests.get(url)
+        r = requests.get(sub_url)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'lxml')
-
         mlist = soup.find(id='memberUserList').children
         for m in mlist:
             members.append(m.find('a', class_='avatar').attrs.get('href').split('/')[-1])
@@ -71,6 +74,7 @@ def subject(stp, sid):
     return jsonify({stp: members})
 
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run()

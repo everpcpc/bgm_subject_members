@@ -2,3 +2,5 @@ flask
 redis
 requests
 bs4
+lxml
+gunicorn
