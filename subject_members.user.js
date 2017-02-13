@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bangumi 添加好友也在看
 // @namespace    com.everpcpc.bgm
-// @version      0.8
+// @version      0.9
 // @description  条目页面添加好友在看信息
 // @author       everpcpc
 // @include      /^https?://(bgm\.tv|chii\.in|bangumi\.tv)/subject/\d+$/
@@ -12,9 +12,8 @@
 
 var subject_id = $(location).attr('href').split('/',5)[4];
 
-$('#columnSubjectHomeA').append('<div class="SimpleSidePanel"><h2>哪些好友也在看？</h2><ul id="friend_doings" class="groupsLine"></ul>');
-
 function main() {
+    $('#columnSubjectHomeA').append('<div class="SimpleSidePanel"><h2>哪些好友也在看？</h2><ul id="friend_doings" class="groupsLine"></ul>');
     var doings_url = 'https://bgm.everpcpc.com/api/subject/doings/' + subject_id + '/';
     $.get(doings_url, function(data) {
         doings = data.doings;
@@ -34,8 +33,7 @@ function main() {
     });
 }
 
-// check if it is subject main page
-if ($('#subject_detail').length > 0) {
+// check if user has logged  in
+if ($('#badgeUserPanel').length > 0) {
     main();
 }
-
