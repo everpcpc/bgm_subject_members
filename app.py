@@ -24,9 +24,11 @@ def get_subject_members(stp, sid):
     r = requests.get(url)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, 'lxml')
-    page_span = soup.find(id='multipage').find('span', class_='p_edge')
+    multipage = soup.find(id='multipage')
+    page_span = multipage.find('span', class_='p_edge')
     if not page_span:
-        pages = 1
+        page_inner = multipage.find('div', class_='page_inner')
+        pages = len(page_inner.findAll('a', class_='p'))
     else:
         pages = int(page_span.text.split('\xa0')[3])
     members = []
