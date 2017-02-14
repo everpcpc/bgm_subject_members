@@ -28,7 +28,10 @@ def get_subject_members(stp, sid):
     page_span = multipage.find('span', class_='p_edge')
     if not page_span:
         page_inner = multipage.find('div', class_='page_inner')
-        pages = len(page_inner.findAll('a', class_='p'))
+        if page_inner:
+            pages = len(page_inner.findAll('a', class_='p'))
+        else:
+            pages = 1  # has only 1 page
     else:
         pages = int(page_span.text.split('\xa0')[3])
     members = []
