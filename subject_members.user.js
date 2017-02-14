@@ -1,12 +1,10 @@
 // ==UserScript==
-// @name         Bangumi 添加好友也在看
+// @name         Bangumi添加好友也在看
 // @namespace    com.everpcpc.bgm
-// @version      0.9
+// @version      1.0.1
 // @description  条目页面添加好友在看信息
 // @author       everpcpc
 // @include      /^https?://(bgm\.tv|chii\.in|bangumi\.tv)/subject/\d+$/
-// @require      https://code.jquery.com/jquery-2.2.4.min.js
-// @grant        none
 // @encoding     utf-8
 // ==/UserScript==
 
