@@ -71,8 +71,8 @@ def subject(sid):
     update = bool(request.args.get('update', False))
     update_key = 'update_%s' % sid
     if update:
-        last_update = int(rds.get(update_key))
-        if now - last_update < UPDATE_INTERVAL:
+        last_update = rds.get(update_key)
+        if last_update and (now - int(last_update) < UPDATE_INTERVAL):
             update = False
             msg = '半个小时之内已经更新过了哦~'
 
