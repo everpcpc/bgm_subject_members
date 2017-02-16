@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import time
+import logging
 import pickle
 
 import requests
@@ -12,19 +13,20 @@ from bs4 import BeautifulSoup
 
 # supported subject types
 STPS = ('doings', 'collections')
-
 MEMBERS_URL = 'https://bgm.tv/subject/{sid}/{stp}'
-
 UPDATE_INTERVAL = 1800  # 30min
 
 rds = Redis()
+
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
 
 def get_subject_members(stp, sid):
     url = MEMBERS_URL.format(stp=stp, sid=sid)
-    print('getting %s' % url)
+    logger.info('searching %s' % url)
     r = requests.get(url)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, 'lxml')
@@ -41,7 +43,7 @@ def get_subject_members(stp, sid):
     members = []
     for i in range(pages):
         sub_url = url + '?page=%d' % (i + 1)
-        print('getting %s' % sub_url)
+        logger.info('getting %s' % sub_url)
         r = requests.get(sub_url)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'lxml')
@@ -86,7 +88,7 @@ def subject(sid):
             rds.set(sid, pickle.dumps(members))
             rds.set(update_key, now)
         except Exception as e:
-            print(e)
+            logger.error(e)
             error = '抓取失败'
     else:
         members = pickle.loads(members)
@@ -107,7 +109,7 @@ def subject_single(stp, sid):
             members = get_subject_members(stp, sid)
             rds.set(key, pickle.dumps(members))
         except Exception as e:
-            print(e)
+            logger.error(e)
             members = []
     else:
         members = pickle.loads(members)
