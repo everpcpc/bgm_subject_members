@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from flask import Flask, Blueprint, jsonify
-from redis import Redis
-import requests
-from bs4 import BeautifulSoup
+import time
 import pickle
+
+import requests
+from flask import Flask, Blueprint, request, jsonify
+from redis import Redis
+from bs4 import BeautifulSoup
 
 
 # supported subject types
 STPS = ('doings', 'collections')
 
 MEMBERS_URL = 'https://bgm.tv/subject/{sid}/{stp}'
+
+UPDATE_INTERVAL = 1800  # 30min
 
 rds = Redis()
 
@@ -60,9 +64,41 @@ def index():
     return 'hello'
 
 
+@api.route('/subject/<int:sid>/')
+def subject(sid):
+    msg = error = ''
+    now = int(time.time())
+    update = bool(request.args.get('update', False))
+    update_key = 'update_%s' % sid
+    if update:
+        last_update = int(rds.get(update_key))
+        if now - last_update < UPDATE_INTERVAL:
+            update = False
+            msg = '半个小时之内已经更新过了哦~'
+
+    members = rds.get(sid)
+    if update or not members:
+        members = {}
+        try:
+            for stp in STPS:
+                members[stp] = get_subject_members(stp, sid)
+            members['update_at'] = now
+            rds.set(sid, pickle.dumps(members))
+            rds.set(update_key, now)
+        except Exception as e:
+            print(e)
+            error = '抓取失败'
+    else:
+        members = pickle.loads(members)
+
+    members['msg'] = msg
+    members['error'] = error
+    return jsonify(members)
+
+
 @api.route('/subject/<stp>/<int:sid>/')
-def subject(stp, sid):
-    if stp not in STPS:
+def subject_single(stp, sid):
+    if stp not in STPS + ('members',):
         return '?'
     key = '%s_%s' % (stp, sid)
     members = rds.get(key)
