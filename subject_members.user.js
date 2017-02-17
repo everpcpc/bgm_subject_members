@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bangumi添加好友在看、看过
 // @namespace    com.everpcpc.bgm
-// @version      1.2.0
+// @version      1.2.1
 // @description  条目页面添加好友信息
 // @author       everpcpc
 // @include      /^https?://(bgm\.tv|chii\.in|bangumi\.tv)/subject/\d+$/
@@ -18,7 +18,6 @@ function get_members(members_url) {
             $('#btn_update_members').html(data.error);
         } else {
             if (data.msg) {
-                console.log(data.msg);
                 $('#btn_update_members').html(data.msg);
             }
             doings = data.doings;
