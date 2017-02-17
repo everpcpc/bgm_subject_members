@@ -72,6 +72,7 @@ def subject(sid):
     now = int(time.time())
     update = bool(request.args.get('update', False))
     update_key = 'update_%s' % sid
+    lock_key = 'lock_%s' % sid
     if update:
         last_update = rds.get(update_key)
         if last_update and (now - int(last_update) < UPDATE_INTERVAL):
@@ -81,15 +82,21 @@ def subject(sid):
     members = rds.get(sid)
     if update or not members:
         members = {}
-        try:
-            for stp in STPS:
-                members[stp] = get_subject_members(stp, sid)
-            members['update_at'] = now
-            rds.set(sid, pickle.dumps(members))
-            rds.set(update_key, now)
-        except Exception as e:
-            logger.error(e)
-            error = '抓取失败'
+        if rds.get(lock_key):
+            error = '已经在更新啦，稍等一下哦~'
+        else:
+            rds.set(lock_key, 1)
+            rds.expire(lock_key, UPDATE_INTERVAL)
+            try:
+                for stp in STPS:
+                    members[stp] = get_subject_members(stp, sid)
+                members['update_at'] = now
+                rds.set(sid, pickle.dumps(members))
+                rds.set(update_key, now)
+                rds.delete(lock_key)
+            except Exception as e:
+                logger.error(e)
+                error = '抓取失败'
     else:
         members = pickle.loads(members)
 
