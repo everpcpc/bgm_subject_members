@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bangumi添加好友在看、看过
 // @namespace    com.everpcpc.bgm
-// @version      1.2.1
+// @version      1.2.2
 // @description  条目页面添加好友信息
 // @author       everpcpc
 // @include      /^https?://(bgm\.tv|chii\.in|bangumi\.tv)/subject/\d+$/
@@ -13,6 +13,7 @@ var subject_id = $(location).attr('href').split('/',5)[4];
 
 function get_members(members_url) {
     $('#btn_update_members').html("更新中，请稍等~");
+    $('#btn_update_members').off("click");
     $.get(members_url, function(data) {
         if (data.error) {
             $('#btn_update_members').html(data.error);
@@ -38,6 +39,7 @@ function get_members(members_url) {
                     }
                 }
                 $('#btn_update_members').html("手动更新↓");
+                $('#btn_update_members').click(update_members);
             });
         }
     });
